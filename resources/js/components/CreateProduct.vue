@@ -90,7 +90,6 @@
                 </div>
             </div>
         </div>
-
         <button @click="saveProduct" type="submit" class="btn btn-lg btn-primary">Save</button>
         <button type="button" class="btn btn-secondary btn-lg">Cancel</button>
     </section>

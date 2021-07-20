@@ -6,10 +6,21 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
 use App\Models\Variant;
+use App\Services\ProductService;
+use App\Services\VariantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
+    public $productService;
+    public $variantService;
+    public function __construct(ProductService $productService, VariantService $variantService)
+    {
+        $this->productService = $productService;
+        $this->variantService = $variantService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -39,7 +50,27 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            "title" => 'required',
+            "sku" => 'required|unique:products'
+        ]);
+        $product = [
+            "title" => $request->title,
+            "sku" => $request->sku,
+            "description" => $request->description
+        ];
 
+        try {
+            DB::beginTransaction();
+            $productId = $this->productService->createProduct($product);
+            $productVariantIds = $this->variantService->createProductVariants($productId, $request->product_variant);
+            $this->variantService->createVariantPrice($productId, $productVariantIds,$request->product_variant_prices);
+            DB::commit();
+            return response()->json('product created');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response() ->json("DB Transaction Failed..");
+        }
     }
 
 
@@ -86,6 +117,6 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        // $product 
     }
 }

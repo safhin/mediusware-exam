@@ -88,6 +88,7 @@ class VariantController extends Controller
      */
     public function destroy(Variant $variant)
     {
-        //
+        $variant->delete();
+        return redirect()->back()->with('success', 'Variant Deleted');
     }
 }
